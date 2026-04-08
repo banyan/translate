@@ -1,0 +1,36 @@
+#!/usr/bin/env -S deno run --allow-env --allow-net --allow-run=pbcopy
+
+type ChatMessage = {
+  role: "system" | "user";
+  content: string;
+};
+
+const SYSTEM_PROMPT = [
+  "You are a translator. Translate the following Japanese text to natural English.",
+  "Output ONLY the translation. No explanations, no quotes, no commentary.",
+  "Wrap technical terms, system names, and code-related words in backticks (e.g., `Hasura`, `query`, `coach`).",
+  "If the input is a mix of Japanese and English, translate everything into English.",
+].join("\n");
+
+export function buildMessages(input: string): ChatMessage[] {
+  return [
+    { role: "system", content: SYSTEM_PROMPT },
+    { role: "user", content: input },
+  ];
+}
+
+export function extractTranslation(body: unknown): string {
+  if (!body || typeof body !== "object") {
+    throw new Error("Invalid API response");
+  }
+  const choices = (body as { choices?: unknown[] }).choices;
+  if (!Array.isArray(choices) || choices.length === 0) {
+    throw new Error("No choices in API response");
+  }
+  const first = choices[0] as { message?: { content?: string } };
+  const content = first?.message?.content;
+  if (typeof content !== "string") {
+    throw new Error("No content in API response");
+  }
+  return content.trim();
+}
