@@ -70,3 +70,15 @@ export async function callOpenRouter(options: CallOptions): Promise<string> {
   const body = await response.json();
   return extractTranslation(body);
 }
+
+export async function copyToClipboard(text: string): Promise<void> {
+  const command = new Deno.Command("pbcopy", { stdin: "piped" });
+  const child = command.spawn();
+  const writer = child.stdin.getWriter();
+  await writer.write(new TextEncoder().encode(text));
+  await writer.close();
+  const status = await child.status;
+  if (!status.success) {
+    throw new Error("pbcopy failed");
+  }
+}

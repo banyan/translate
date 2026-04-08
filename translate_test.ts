@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/assert_equals.ts";
-import { buildMessages, callOpenRouter, extractTranslation } from "./translate";
+import { buildMessages, callOpenRouter, copyToClipboard, extractTranslation } from "./translate";
 
 Deno.test("buildMessages returns system + user message", () => {
   const messages = buildMessages("こんにちは");
@@ -77,4 +77,12 @@ Deno.test("callOpenRouter throws on API error", async () => {
     threw = true;
   }
   assertEquals(threw, true);
+});
+
+Deno.test("copyToClipboard runs pbcopy with text", async () => {
+  // This test actually runs pbcopy on macOS
+  await copyToClipboard("test clipboard content");
+  const result = new Deno.Command("pbpaste", { stdout: "piped" });
+  const { stdout } = await result.output();
+  assertEquals(new TextDecoder().decode(stdout), "test clipboard content");
 });
