@@ -1,6 +1,6 @@
 # translate
 
-Interactive CLI tool for Japanese to English translation powered by LLM via OpenRouter.
+> Interactive CLI tool for Japanese to English translation powered by LLM via OpenRouter.
 
 ## Features
 
@@ -9,6 +9,10 @@ Interactive CLI tool for Japanese to English translation powered by LLM via Open
 - Code identifiers (DB column names, table names, etc.) are wrapped in backticks
 - Automatic clipboard copy via `pbcopy` (macOS)
 - Each translation is independent (no conversation context)
+
+## Requirements
+
+- [OpenRouter](https://openrouter.ai/) API key
 
 ## Setup
 
@@ -20,21 +24,18 @@ export OPENROUTER_API_KEY=your-api-key
 
 ```
 $ translate
-> hasura になれてもらうのも含めて coach の query のタスクをお願いしますか
-Would you like to take on the coach query task as part of getting familiar with Hasura?
-
-> user_id カラムに index を貼ってください
-Please add an index to the `user_id` column.
+> こんにちは
+Hello.
 ```
 
 Exit with `Ctrl+C` or `Ctrl+D`.
 
 ## Configuration
 
-| Variable | Required | Default |
-|----------|----------|---------|
-| `OPENROUTER_API_KEY` | yes | - |
-| `TRANSLATE_MODEL` | no | `anthropic/claude-4.6-sonnet` |
+| Variable             | Required | Default                       |
+| -------------------- | -------- | ----------------------------- |
+| `OPENROUTER_API_KEY` | yes      | -                             |
+| `TRANSLATE_MODEL`    | no       | `anthropic/claude-4.6-sonnet` |
 
 ## Install
 
@@ -42,7 +43,7 @@ Exit with `Ctrl+C` or `Ctrl+D`.
 ln -sf "$(pwd)/translate" ~/bin/translate
 ```
 
-## Tech
+## Tech Stack
 
-- Deno (single file, no dependencies)
+- Deno
 - OpenRouter API
