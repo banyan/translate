@@ -39,3 +39,44 @@ Deno.test("extractTranslation throws on empty response", () => {
   }
   assertEquals(threw, true);
 });
+
+import { callOpenRouter } from "./translate";
+
+Deno.test("callOpenRouter sends correct request and returns translation", async () => {
+  const fakeFetch = (input: string | URL | Request, init?: RequestInit) => {
+    const url = typeof input === "string" ? input : input.toString();
+    assertEquals(url, "https://openrouter.ai/api/v1/chat/completions");
+    const body = JSON.parse(init?.body as string);
+    assertEquals(body.model, "test-model");
+    assertEquals(body.messages.length, 2);
+    return Promise.resolve(
+      new Response(JSON.stringify({
+        choices: [{ message: { content: "Hello" } }],
+      })),
+    );
+  };
+  const result = await callOpenRouter({
+    apiKey: "test-key",
+    model: "test-model",
+    input: "こんにちは",
+    fetchImpl: fakeFetch as typeof fetch,
+  });
+  assertEquals(result, "Hello");
+});
+
+Deno.test("callOpenRouter throws on API error", async () => {
+  const fakeFetch = () =>
+    Promise.resolve(new Response("Unauthorized", { status: 401 }));
+  let threw = false;
+  try {
+    await callOpenRouter({
+      apiKey: "bad-key",
+      model: "test-model",
+      input: "テスト",
+      fetchImpl: fakeFetch as typeof fetch,
+    });
+  } catch {
+    threw = true;
+  }
+  assertEquals(threw, true);
+});
