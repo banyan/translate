@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/assert_equals.ts";
-import { buildMessages, extractTranslation } from "./translate";
+import { buildMessages, callOpenRouter, extractTranslation } from "./translate";
 
 Deno.test("buildMessages returns system + user message", () => {
   const messages = buildMessages("こんにちは");
@@ -39,8 +39,6 @@ Deno.test("extractTranslation throws on empty response", () => {
   }
   assertEquals(threw, true);
 });
-
-import { callOpenRouter } from "./translate";
 
 Deno.test("callOpenRouter sends correct request and returns translation", async () => {
   const fakeFetch = (input: string | URL | Request, init?: RequestInit) => {
