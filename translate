@@ -82,3 +82,43 @@ export async function copyToClipboard(text: string): Promise<void> {
     throw new Error("pbcopy failed");
   }
 }
+
+const DEFAULT_MODEL = "anthropic/claude-4.6-sonnet";
+
+async function main(): Promise<number> {
+  const apiKey = Deno.env.get("OPENROUTER_API_KEY");
+  if (!apiKey) {
+    console.error("Error: OPENROUTER_API_KEY is not set");
+    return 1;
+  }
+
+  const model = Deno.env.get("TRANSLATE_MODEL") || DEFAULT_MODEL;
+
+  while (true) {
+    const input = prompt(">");
+    if (input === null) {
+      // Ctrl+D
+      break;
+    }
+
+    const trimmed = input.trim();
+    if (!trimmed) {
+      continue;
+    }
+
+    try {
+      const translation = await callOpenRouter({ apiKey, model, input: trimmed });
+      console.log(translation);
+      await copyToClipboard(translation);
+      console.error("(📋 copied)");
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : String(error));
+    }
+  }
+
+  return 0;
+}
+
+if (import.meta.main) {
+  Deno.exit(await main());
+}
