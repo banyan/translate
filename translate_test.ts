@@ -13,7 +13,7 @@ Deno.test("buildMessages system prompt instructs translation rules", () => {
   const messages = buildMessages("テスト");
   const system = messages[0].content;
   assertEquals(system.includes("translate"), true);
-  assertEquals(system.includes("backtick"), true);
+  assertEquals(system.includes("backticks"), true);
 });
 
 Deno.test("extractTranslation pulls content from OpenRouter response", () => {

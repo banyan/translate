@@ -8,7 +8,7 @@ type ChatMessage = {
 const SYSTEM_PROMPT = [
   "You are a translator. Translate the following Japanese text to natural English.",
   "Output ONLY the translation. No explanations, no quotes, no commentary.",
-  "Wrap technical terms, system names, and code-related words in backticks (e.g., `Hasura`, `query`, `coach`).",
+  "Wrap code-level identifiers like database column names, table names, and variable names in backticks (e.g., `user_id`, `created_at`). Do NOT wrap product names or general technical terms like Hasura, React, API in backticks.",
   "If the input is a mix of Japanese and English, translate everything into English.",
 ].join("\n");
 
@@ -110,7 +110,7 @@ async function main(): Promise<number> {
       const translation = await callOpenRouter({ apiKey, model, input: trimmed });
       console.log(translation);
       await copyToClipboard(translation);
-      console.error("(📋 copied)");
+      // clipboard copy is silent
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
     }
