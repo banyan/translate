@@ -1,5 +1,11 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/assert_equals.ts";
-import { buildMessages, callOpenRouter, copyToClipboard, extractTranslation } from "./translate";
+import {
+  buildMessages,
+  callOpenRouter,
+  copyToClipboard,
+  extractTranslation,
+  serializeHistoryEntry,
+} from "./translate";
 
 Deno.test("buildMessages returns system + user message", () => {
   const messages = buildMessages("こんにちは");
@@ -85,4 +91,29 @@ Deno.test("copyToClipboard runs pbcopy with text", async () => {
   const result = new Deno.Command("pbpaste", { stdout: "piped" });
   const { stdout } = await result.output();
   assertEquals(new TextDecoder().decode(stdout), "test clipboard content");
+});
+
+Deno.test("serializeHistoryEntry produces a single JSON line", () => {
+  const entry = {
+    ts: "2026-04-18T12:00:00.000Z",
+    input: "こんにちは",
+    output: "Hello",
+  };
+  const line = serializeHistoryEntry(entry);
+  assertEquals(line.endsWith("\n"), true);
+  assertEquals(line.slice(0, -1).includes("\n"), false);
+  assertEquals(JSON.parse(line), entry);
+});
+
+Deno.test("serializeHistoryEntry escapes newlines in input and output", () => {
+  const entry = {
+    ts: "2026-04-18T12:00:00.000Z",
+    input: "line1\nline2",
+    output: "out1\nout2",
+  };
+  const line = serializeHistoryEntry(entry);
+  assertEquals(line.slice(0, -1).includes("\n"), false);
+  const parsed = JSON.parse(line);
+  assertEquals(parsed.input, "line1\nline2");
+  assertEquals(parsed.output, "out1\nout2");
 });

@@ -36,6 +36,16 @@ export function extractTranslation(body: unknown): string {
   return content.trim();
 }
 
+export type HistoryEntry = {
+  ts: string;
+  input: string;
+  output: string;
+};
+
+export function serializeHistoryEntry(entry: HistoryEntry): string {
+  return JSON.stringify(entry) + "\n";
+}
+
 type CallOptions = {
   apiKey: string;
   model: string;
