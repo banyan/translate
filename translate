@@ -1,4 +1,4 @@
-#!/usr/bin/env -S deno run --allow-env --allow-net --allow-run=pbcopy
+#!/usr/bin/env -S deno run --allow-env --allow-net --allow-run=pbcopy --allow-write
 
 type ChatMessage = {
   role: "system" | "user";
@@ -137,8 +137,20 @@ async function main(): Promise<number> {
     try {
       const translation = await callOpenRouter({ apiKey, model, input: trimmed });
       console.log(translation);
+      try {
+        await appendHistory({
+          ts: new Date().toISOString(),
+          input: trimmed,
+          output: translation,
+        });
+      } catch (historyError) {
+        console.error(
+          `history write failed: ${
+            historyError instanceof Error ? historyError.message : String(historyError)
+          }`,
+        );
+      }
       await copyToClipboard(translation);
-      // clipboard copy is silent
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
     }
