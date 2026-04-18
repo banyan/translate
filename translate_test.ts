@@ -1,5 +1,6 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/assert_equals.ts";
 import {
+  appendHistory,
   buildMessages,
   callOpenRouter,
   copyToClipboard,
@@ -145,4 +146,28 @@ Deno.test("resolveHistoryPath throws when HOME is unset", () => {
     if (original !== undefined) Deno.env.set("HOME", original);
   }
   assertEquals(threw, true);
+});
+
+Deno.test("appendHistory writes JSONL entries and creates parent dirs", async () => {
+  const tmp = await Deno.makeTempDir();
+  try {
+    const path = `${tmp}/nested/dir/history.jsonl`;
+    await appendHistory(
+      { ts: "2026-04-18T12:00:00.000Z", input: "a", output: "A" },
+      path,
+    );
+    await appendHistory(
+      { ts: "2026-04-18T12:00:01.000Z", input: "b", output: "B" },
+      path,
+    );
+    const content = await Deno.readTextFile(path);
+    const lines = content.split("\n").filter((l) => l.length > 0);
+    assertEquals(lines.length, 2);
+    assertEquals(JSON.parse(lines[0]).input, "a");
+    assertEquals(JSON.parse(lines[0]).output, "A");
+    assertEquals(JSON.parse(lines[1]).input, "b");
+    assertEquals(JSON.parse(lines[1]).output, "B");
+  } finally {
+    await Deno.remove(tmp, { recursive: true });
+  }
 });

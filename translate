@@ -54,6 +54,15 @@ export function resolveHistoryPath(): string {
   return `${home}/.local/state/translate/history.jsonl`;
 }
 
+export async function appendHistory(
+  entry: HistoryEntry,
+  path: string = resolveHistoryPath(),
+): Promise<void> {
+  const dir = path.slice(0, path.lastIndexOf("/"));
+  await Deno.mkdir(dir, { recursive: true });
+  await Deno.writeTextFile(path, serializeHistoryEntry(entry), { append: true });
+}
+
 type CallOptions = {
   apiKey: string;
   model: string;
