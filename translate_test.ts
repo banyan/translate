@@ -4,6 +4,7 @@ import {
   callOpenRouter,
   copyToClipboard,
   extractTranslation,
+  resolveHistoryPath,
   serializeHistoryEntry,
 } from "./translate";
 
@@ -116,4 +117,32 @@ Deno.test("serializeHistoryEntry escapes newlines in input and output", () => {
   const parsed = JSON.parse(line);
   assertEquals(parsed.input, "line1\nline2");
   assertEquals(parsed.output, "out1\nout2");
+});
+
+Deno.test("resolveHistoryPath returns HOME-based path", () => {
+  const original = Deno.env.get("HOME");
+  Deno.env.set("HOME", "/tmp/fake-home");
+  try {
+    assertEquals(
+      resolveHistoryPath(),
+      "/tmp/fake-home/.local/state/translate/history.jsonl",
+    );
+  } finally {
+    if (original === undefined) Deno.env.delete("HOME");
+    else Deno.env.set("HOME", original);
+  }
+});
+
+Deno.test("resolveHistoryPath throws when HOME is unset", () => {
+  const original = Deno.env.get("HOME");
+  Deno.env.delete("HOME");
+  let threw = false;
+  try {
+    resolveHistoryPath();
+  } catch {
+    threw = true;
+  } finally {
+    if (original !== undefined) Deno.env.set("HOME", original);
+  }
+  assertEquals(threw, true);
 });

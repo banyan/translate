@@ -46,6 +46,14 @@ export function serializeHistoryEntry(entry: HistoryEntry): string {
   return JSON.stringify(entry) + "\n";
 }
 
+export function resolveHistoryPath(): string {
+  const home = Deno.env.get("HOME");
+  if (!home) {
+    throw new Error("HOME environment variable is not set");
+  }
+  return `${home}/.local/state/translate/history.jsonl`;
+}
+
 type CallOptions = {
   apiKey: string;
   model: string;
