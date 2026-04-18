@@ -37,6 +37,16 @@ Exit with `Ctrl+C` or `Ctrl+D`.
 | `OPENROUTER_API_KEY` | yes      | -                             |
 | `TRANSLATE_MODEL`    | no       | `anthropic/claude-4.6-sonnet` |
 
+## History
+
+Successful translations are appended to `~/.local/state/translate/history.jsonl` as JSONL:
+
+```json
+{"ts":"2026-04-18T12:34:56.789Z","input":"こんにちは","output":"Hello."}
+```
+
+Search with `jq` or `grep`. Failed translations are not recorded.
+
 ## Install
 
 ```bash
