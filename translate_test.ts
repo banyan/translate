@@ -5,6 +5,7 @@ import {
   callOpenRouter,
   copyToClipboard,
   extractTranslation,
+  parseHistoryForInputs,
   resolveHistoryPath,
   serializeHistoryEntry,
 } from "./translate";
@@ -146,6 +147,38 @@ Deno.test("resolveHistoryPath throws when HOME is unset", () => {
     if (original !== undefined) Deno.env.set("HOME", original);
   }
   assertEquals(threw, true);
+});
+
+Deno.test("parseHistoryForInputs returns inputs in order", () => {
+  const content = [
+    JSON.stringify({ ts: "t1", input: "first", output: "F" }),
+    JSON.stringify({ ts: "t2", input: "second", output: "S" }),
+    "",
+  ].join("\n");
+  assertEquals(parseHistoryForInputs(content), ["first", "second"]);
+});
+
+Deno.test("parseHistoryForInputs skips malformed lines", () => {
+  const content = [
+    JSON.stringify({ ts: "t1", input: "ok", output: "x" }),
+    "{not json",
+    JSON.stringify({ ts: "t2", output: "no input field" }),
+    JSON.stringify({ ts: "t3", input: 123 }),
+    JSON.stringify({ ts: "t4", input: "good", output: "y" }),
+  ].join("\n");
+  assertEquals(parseHistoryForInputs(content), ["ok", "good"]);
+});
+
+Deno.test("parseHistoryForInputs skips multi-line inputs", () => {
+  const content = [
+    JSON.stringify({ ts: "t1", input: "line1\nline2", output: "x" }),
+    JSON.stringify({ ts: "t2", input: "single", output: "y" }),
+  ].join("\n");
+  assertEquals(parseHistoryForInputs(content), ["single"]);
+});
+
+Deno.test("parseHistoryForInputs handles empty content", () => {
+  assertEquals(parseHistoryForInputs(""), []);
 });
 
 Deno.test("appendHistory writes JSONL entries and creates parent dirs", async () => {

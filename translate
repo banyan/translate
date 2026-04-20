@@ -63,6 +63,36 @@ export async function appendHistory(
   await Deno.writeTextFile(path, serializeHistoryEntry(entry), { append: true });
 }
 
+export function parseHistoryForInputs(content: string): string[] {
+  const out: string[] = [];
+  for (const line of content.split("\n")) {
+    if (!line) continue;
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    const input = (parsed as { input?: unknown })?.input;
+    if (typeof input !== "string") continue;
+    if (input.includes("\n")) continue;
+    out.push(input);
+  }
+  return out;
+}
+
+export async function loadHistoryInputs(
+  path: string = resolveHistoryPath(),
+): Promise<string[]> {
+  try {
+    const content = await Deno.readTextFile(path);
+    return parseHistoryForInputs(content);
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) return [];
+    throw e;
+  }
+}
+
 type CallOptions = {
   apiKey: string;
   model: string;
