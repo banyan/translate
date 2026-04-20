@@ -1,4 +1,7 @@
-#!/usr/bin/env -S deno run --allow-env --allow-net --allow-run=pbcopy --allow-write
+#!/usr/bin/env -S deno run --allow-env --allow-net --allow-run=pbcopy --allow-read --allow-write
+
+import * as readline from "node:readline";
+import process from "node:process";
 
 type ChatMessage = {
   role: "system" | "user";
@@ -152,15 +155,36 @@ async function main(): Promise<number> {
 
   const model = Deno.env.get("TRANSLATE_MODEL") || DEFAULT_MODEL;
 
-  while (true) {
-    const input = prompt(">");
-    if (input === null) {
-      // Ctrl+D
-      break;
-    }
+  let initialHistory: string[] = [];
+  try {
+    initialHistory = await loadHistoryInputs();
+  } catch (e) {
+    console.error(
+      `history load failed: ${e instanceof Error ? e.message : String(e)}`,
+    );
+  }
 
-    const trimmed = input.trim();
+  // node:readline expects history with the most recent entry at index 0.
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+    terminal: true,
+    prompt: "> ",
+    history: initialHistory.slice().reverse(),
+    historySize: 1000,
+    removeHistoryDuplicates: true,
+  });
+
+  let closed = false;
+  rl.on("close", () => {
+    closed = true;
+  });
+
+  rl.prompt();
+  for await (const line of rl) {
+    const trimmed = line.trim();
     if (!trimmed) {
+      if (!closed) rl.prompt();
       continue;
     }
 
@@ -184,6 +208,7 @@ async function main(): Promise<number> {
     } catch (error) {
       console.error(error instanceof Error ? error.message : String(error));
     }
+    if (!closed) rl.prompt();
   }
 
   return 0;
